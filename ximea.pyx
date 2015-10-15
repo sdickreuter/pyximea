@@ -3,41 +3,27 @@ cimport cximea as xi
 from constants import *
 cimport numpy as np
 import numpy as np
-#logging
-import logging
-logger = logging.getLogger(__name__)
 
+class XimeaError(Exception):
+    '''XIMEA error codes error'''
+    # mimics EnvironmentError 2 tuple behaviour
+    def __init__(self, errno):
+        error = error_codes.get(ret, ("UNKNOWN","undefined error"))
+        super(XimeaError, self).__init__('[Errno {}] {}'.format(*error))
 
-class XI_Error(Exception):
-    """General Exception for this module"""
-    def __init__(self, arg):
-        super(XI_Error, self).__init__()
-        self.arg = arg
+        self.args = (errno, error[1])
+        self.errno = errno
+        self.strerror = error[1]
 
-
-class XI_Wrong_Param_Type_Error(Exception):
-    """Parameter Type was wrong."""
-    def __init__(self, arg):
-        super(XI_Wrong_Param_Type_Error, self).__init__()
-        self.arg = arg
-
+class XimeaParameterTypeError(XimeaError):
+    pass
 
 cpdef handle_xi_error(xi.XI_RETURN ret):
     if ret !=0:
-        try:
-            error = error_codes[ret]
-        except KeyError:
-            error = ("UNKNOWN","Error not defined in API")
         if ret == 103:
-            raise XI_Wrong_Param_Type_Error("Wrong Paramter Type")
-        elif ret == 56:
-            logger.warning(error[0]+": "+error[1])
-            raise XI_Error("Device could not be opended.")
+            raise XimeaParameterTypeError(ret)
         else:
-            logger.warning(error[0]+": "+error[1])
-            # raise XI_Error(error[0]+": "+error[1])
-
-
+            raise XimeaError(ret)
 
 def get_device_count():
     cdef xi.DWORD num
@@ -93,7 +79,7 @@ cdef class Xi_Camera:
         elif type(value) == str:
             handle_xi_error( xi.xiSetParamString(self._xi_device,param_name,<char*>value,len(value)))
         else:
-            logger.warning("value is not int,float or string")
+            raise ValueError("parameter value must be int, float, or string")
 
     def get_param(self,const char* param_name,type_hint=None):
         '''
@@ -122,14 +108,14 @@ cdef class Xi_Camera:
                 float_value = 0.0
                 handle_xi_error( xi.xiGetParamFloat(self._xi_device,param_name,&float_value))
                 return float_value
-            except XI_Wrong_Param_Type_Error:
+            except XimeaParameterTypeError:
                 #its not an int lets try float
                 pass
             try:
                 int_value = 0
                 handle_xi_error( xi.xiGetParamInt(self._xi_device,param_name,&int_value))
                 return int_value
-            except XI_Wrong_Param_Type_Error:
+            except XimeaParameterTypeError:
                 #ints not a float, lets try str.
                 pass
             string
@@ -172,7 +158,7 @@ cdef class Xi_Camera:
         try:
             lvl = logger_levels[level]
         except KeyError:
-            raise XI_Error("Level '%s' not avaible in API"%level)
+            raise KeyError("invalid debug level '%s'" % level)
         handle_xi_error( xi.xiSetParamInt(self._xi_device,XI_PRM_DEBUG_LEVEL,lvl) )
 
 
@@ -187,7 +173,7 @@ cdef class Xi_Camera:
         ret = xi.xiGetImage(self._xi_device,timeout_ms,&self._xi_image)
         if ret != 0:
             handle_xi_error(ret)
-            raise XI_Error("Image aquisition error")
+
         # print self._xi_image.width,self._xi_image.height,self._xi_image.bp_size,self._xi_image.tsSec,self._xi_image.nframe
 
         cdef int [:, :, :] carr_view #dummy init for compiler....
@@ -200,7 +186,7 @@ cdef class Xi_Camera:
         elif self._xi_image.frm == xi.XI_RGB32:
             img_array = np.asarray(<np.uint8_t[:self._xi_image.bp_size]> self._xi_image.bp).reshape((self._xi_image.height,self._xi_image.width,4))
         else:
-            raise xi.XI_Error("Not implemented.")
+            raise NotImplementedError("don't know how to convert image form")
         # img_array = np.asarray(<np.uint8_t[:self._xi_image.height*self._xi_image.width,]> self._xi_image.bp).reshape((self._xi_image.height,self._xi_image.width))
         return img_array
 
