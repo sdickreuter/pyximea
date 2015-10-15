@@ -8,12 +8,14 @@ class XimeaError(Exception):
     '''XIMEA error codes error'''
     # mimics EnvironmentError 2 tuple behaviour
     def __init__(self, errno):
-        error = error_codes.get(ret, ("UNKNOWN","undefined error"))
-        super(XimeaError, self).__init__('[Errno {}] {}'.format(*error))
+        error = error_codes.get(errno, ("UNKNOWN","undefined error"))
 
         self.args = (errno, error[1])
         self.errno = errno
         self.strerror = error[1]
+
+    def __str__(self):
+        return '[Errno {}] {}'.format(*self.args)
 
 class XimeaParameterTypeError(XimeaError):
     pass
