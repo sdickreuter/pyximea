@@ -42,7 +42,7 @@ def get_device_info(xi.DWORD DevID, const char* parameter_name):
         "device_inst_path"
     """
     cdef char[512] info
-    handle_xi_error(xi.xiGetDeviceInfoString(DevID,parameter_name,info,len(parameter_name) ) )
+    handle_xi_error( xi.xiGetDeviceInfoString(DevID, parameter_name, info, 512) )
     return info
 
 cdef class Xi_Camera:
