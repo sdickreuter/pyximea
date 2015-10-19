@@ -1,6 +1,6 @@
 import cython
 cimport cximea as xi
-from constants import *
+from ximea_constants import *
 cimport numpy as np
 import numpy as np
 
