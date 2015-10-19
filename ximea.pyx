@@ -102,7 +102,7 @@ cdef class Xi_Camera:
                 return float_value
             elif type_hint == str:
                 string
-                handle_xi_error( xi.xiGetParamString(self._xi_device,param_name,string,len(string)))
+                handle_xi_error( xi.xiGetParamString(self._xi_device,param_name,string,512))
                 return string
 
         else:
@@ -121,7 +121,7 @@ cdef class Xi_Camera:
                 #ints not a float, lets try str.
                 pass
             string
-            handle_xi_error( xi.xiGetParamString(self._xi_device,param_name,string,len(string)))
+            handle_xi_error( xi.xiGetParamString(self._xi_device,param_name,string,512))
             return string
 
 
