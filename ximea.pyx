@@ -45,6 +45,9 @@ def get_device_info(xi.DWORD DevID, const char* parameter_name):
     handle_xi_error( xi.xiGetDeviceInfoString(DevID, parameter_name, info, 512) )
     return info
 
+def set_debug_level(int debug_level):
+    xi.xiSetParamInt(<xi.HANDLE>0, XI_PRM_DEBUG_LEVEL, debug_level)
+
 cdef class Xi_Camera:
     cdef xi.HANDLE _xi_device
     cdef bint aquisition_active
