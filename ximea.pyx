@@ -3,7 +3,6 @@ cimport cximea as xi
 from constants import *
 cimport numpy as np
 import numpy as np
-from cpython cimport bool
 #logging
 import logging
 logger = logging.getLogger(__name__)
