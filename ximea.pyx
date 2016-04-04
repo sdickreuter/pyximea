@@ -3,10 +3,13 @@ cimport cximea as xi
 from constants import *
 cimport numpy as np
 import numpy as np
+from cpython cimport bool
 #logging
 import logging
 logger = logging.getLogger(__name__)
 
+cdef extern from "stdbool.h":
+    ctypedef int bool
 
 class XI_Error(Exception):
     """General Exception for this module"""
@@ -152,9 +155,13 @@ cdef class Xi_Camera:
             handle_xi_error( xi.xiStopAcquisition(self._xi_device) )
             self.aquisition_active = False
 
-    def set_binning(self,xi.DWORD bin_level):
+    def set_binning(self,xi.DWORD bin_level, skipping=True):
         self.stop_aquisition()
-        handle_xi_error( xi.xiSetParamInt(self._xi_device,XI_PRM_DOWNSAMPLING_TYPE,XI_SKIPPING))
+        if skipping:
+            handle_xi_error( xi.xiSetParamInt(self._xi_device,XI_PRM_DOWNSAMPLING_TYPE,XI_SKIPPING))
+        else:
+            handle_xi_error( xi.xiSetParamInt(self._xi_device,XI_PRM_DOWNSAMPLING_TYPE,XI_BINNING))
+            
         handle_xi_error( xi.xiSetParamInt(self._xi_device,XI_PRM_DOWNSAMPLING,bin_level))
 
 

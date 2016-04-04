@@ -25,7 +25,7 @@ extensions = [
                 include_dirs = includes,
                 libraries = libs,
                 extra_link_args=link_args,
-                # extra_compile_args=[]
+                extra_compile_args=['-std=c99']
             ),
 ]
 
