@@ -210,6 +210,13 @@ cdef class Xi_Camera:
         # img_array = np.asarray(<np.uint8_t[:self._xi_image.height*self._xi_image.width,]> self._xi_image.bp).reshape((self._xi_image.height,self._xi_image.width))
         return img_array
 
+    def read(self, timeout_ms=500):
+        img = self.get_image(timeout_ms=timeout_ms)
+        if img is not None:
+            return 0, img
+        else:
+            return 1, None
+
     def close(self):
         self.stop_aquisition()
 
