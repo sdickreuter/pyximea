@@ -9,7 +9,7 @@ arch=('x86_64')
 url="https://www.ximea.com/support/wiki/apis/XIMEA_Linux_Software_Package"
 license=('GPL')
 source=("http://www.ximea.com/downloads/recent/XIMEA_Linux_SP.tgz")
-md5sums=('d46a5100ccf8a35f2f8257b313f6ffe2')
+md5sums=('4f4543bb9cf6a8eb8ed77b4b07e1442e')
 
 build() {
         cd "$srcdir/package"
