@@ -16,8 +16,6 @@ class XI_Error(Exception):
         super(XI_Error, self).__init__()
         self.arg = arg
 
-    def __str__(self):
-        return '[Errno {}] {}'.format(*self.args)
 
 class XI_Wrong_Param_Type_Error(Exception):
     """Parameter Type was wrong."""

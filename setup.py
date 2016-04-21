@@ -31,6 +31,5 @@ extensions = [
 setup(  name="ximea",
         version="0.0.1",
         description="Ximea XiAPI Python Bindings",
-        py_modules = ['ximea_constants'],
         ext_modules=cythonize(extensions)
 )
