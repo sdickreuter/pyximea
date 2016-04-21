@@ -1,31 +1,47 @@
 import cython
 cimport cximea as xi
-from ximea_constants import *
+from constants import *
 cimport numpy as np
 import numpy as np
+#logging
+import logging
+logger = logging.getLogger(__name__)
 
-class XimeaError(Exception):
-    '''XIMEA error codes error'''
-    # mimics EnvironmentError 2 tuple behaviour
-    def __init__(self, errno):
-        error = error_codes.get(errno, ("UNKNOWN","undefined error"))
+cdef extern from "stdbool.h":
+    ctypedef int bool
 
-        self.args = (errno, error[1])
-        self.errno = errno
-        self.strerror = error[1]
+class XI_Error(Exception):
+    """General Exception for this module"""
+    def __init__(self, arg):
+        super(XI_Error, self).__init__()
+        self.arg = arg
 
     def __str__(self):
         return '[Errno {}] {}'.format(*self.args)
 
-class XimeaParameterTypeError(XimeaError):
-    pass
+class XI_Wrong_Param_Type_Error(Exception):
+    """Parameter Type was wrong."""
+    def __init__(self, arg):
+        super(XI_Wrong_Param_Type_Error, self).__init__()
+        self.arg = arg
+
 
 cpdef handle_xi_error(xi.XI_RETURN ret):
     if ret !=0:
+        try:
+            error = error_codes[ret]
+        except KeyError:
+            error = ("UNKNOWN","Error not defined in API")
         if ret == 103:
-            raise XimeaParameterTypeError(ret)
+            raise XI_Wrong_Param_Type_Error("Wrong Paramter Type")
+        elif ret == 56:
+            logger.warning(error[0]+": "+error[1])
+            raise XI_Error("Device could not be opended.")
         else:
-            raise XimeaError(ret)
+            logger.warning(error[0]+": "+error[1])
+            # raise XI_Error(error[0]+": "+error[1])
+
+
 
 def get_device_count():
     cdef xi.DWORD num
@@ -42,11 +58,8 @@ def get_device_info(xi.DWORD DevID, const char* parameter_name):
         "device_inst_path"
     """
     cdef char[512] info
-    handle_xi_error( xi.xiGetDeviceInfoString(DevID, parameter_name, info, 512) )
+    handle_xi_error(xi.xiGetDeviceInfoString(DevID,parameter_name,info,len(parameter_name) ) )
     return info
-
-def set_debug_level(int debug_level):
-    xi.xiSetParamInt(<xi.HANDLE>0, XI_PRM_DEBUG_LEVEL, debug_level)
 
 cdef class Xi_Camera:
     cdef xi.HANDLE _xi_device
@@ -84,7 +97,7 @@ cdef class Xi_Camera:
         elif type(value) == str:
             handle_xi_error( xi.xiSetParamString(self._xi_device,param_name,<char*>value,len(value)))
         else:
-            raise ValueError("parameter value must be int, float, or string")
+            logger.warning("value is not int,float or string")
 
     def get_param(self,const char* param_name,type_hint=None):
         '''
@@ -93,7 +106,7 @@ cdef class Xi_Camera:
         '''
         cdef int int_value
         cdef float float_value
-        cdef char[2048] string
+        cdef char[512] string
         if type_hint is not None:
             if type_hint == int:
                 int_value = 0
@@ -105,7 +118,7 @@ cdef class Xi_Camera:
                 return float_value
             elif type_hint == str:
                 string
-                handle_xi_error( xi.xiGetParamString(self._xi_device,param_name,string,2048))
+                handle_xi_error( xi.xiGetParamString(self._xi_device,param_name,string,len(string)))
                 return string
 
         else:
@@ -113,18 +126,18 @@ cdef class Xi_Camera:
                 float_value = 0.0
                 handle_xi_error( xi.xiGetParamFloat(self._xi_device,param_name,&float_value))
                 return float_value
-            except XimeaParameterTypeError:
+            except XI_Wrong_Param_Type_Error:
                 #its not an int lets try float
                 pass
             try:
                 int_value = 0
                 handle_xi_error( xi.xiGetParamInt(self._xi_device,param_name,&int_value))
                 return int_value
-            except XimeaParameterTypeError:
+            except XI_Wrong_Param_Type_Error:
                 #ints not a float, lets try str.
                 pass
             string
-            handle_xi_error( xi.xiGetParamString(self._xi_device,param_name,string,2048))
+            handle_xi_error( xi.xiGetParamString(self._xi_device,param_name,string,len(string)))
             return string
 
 
@@ -143,9 +156,13 @@ cdef class Xi_Camera:
             handle_xi_error( xi.xiStopAcquisition(self._xi_device) )
             self.aquisition_active = False
 
-    def set_binning(self,xi.DWORD bin_level):
+    def set_binning(self,xi.DWORD bin_level, skipping=True):
         self.stop_aquisition()
-        handle_xi_error( xi.xiSetParamInt(self._xi_device,XI_PRM_DOWNSAMPLING_TYPE,XI_SKIPPING))
+        if skipping:
+            handle_xi_error( xi.xiSetParamInt(self._xi_device,XI_PRM_DOWNSAMPLING_TYPE,XI_SKIPPING))
+        else:
+            handle_xi_error( xi.xiSetParamInt(self._xi_device,XI_PRM_DOWNSAMPLING_TYPE,XI_BINNING))
+            
         handle_xi_error( xi.xiSetParamInt(self._xi_device,XI_PRM_DOWNSAMPLING,bin_level))
 
 
@@ -163,7 +180,7 @@ cdef class Xi_Camera:
         try:
             lvl = logger_levels[level]
         except KeyError:
-            raise KeyError("invalid debug level '%s'" % level)
+            raise XI_Error("Level '%s' not avaible in API"%level)
         handle_xi_error( xi.xiSetParamInt(self._xi_device,XI_PRM_DEBUG_LEVEL,lvl) )
 
 
@@ -178,22 +195,29 @@ cdef class Xi_Camera:
         ret = xi.xiGetImage(self._xi_device,timeout_ms,&self._xi_image)
         if ret != 0:
             handle_xi_error(ret)
-
+            raise XI_Error("Image aquisition error")
         # print self._xi_image.width,self._xi_image.height,self._xi_image.bp_size,self._xi_image.tsSec,self._xi_image.nframe
 
         cdef int [:, :, :] carr_view #dummy init for compiler....
         if self._xi_image.frm == xi.XI_MONO8 or self._xi_image.frm == xi.XI_RAW8:
             img_array = np.asarray(<np.uint8_t[:self._xi_image.bp_size]> self._xi_image.bp).reshape((self._xi_image.height,self._xi_image.width))
         elif self._xi_image.frm == xi.XI_MONO16 or self._xi_image.frm == xi.XI_RAW16:
-            img_array = np.asarray(<np.uint16_t[:self._xi_image.bp_size]> self._xi_image.bp).reshape((self._xi_image.height,self._xi_image.width))
+            img_array = np.asarray(<np.uint16_t[:self._xi_image.bp_size/2]> self._xi_image.bp).reshape((self._xi_image.height,self._xi_image.width))
         elif self._xi_image.frm == xi.XI_RGB24:
             img_array = np.asarray(<np.uint8_t[:self._xi_image.bp_size]> self._xi_image.bp).reshape((self._xi_image.height,self._xi_image.width,3))
         elif self._xi_image.frm == xi.XI_RGB32:
             img_array = np.asarray(<np.uint8_t[:self._xi_image.bp_size]> self._xi_image.bp).reshape((self._xi_image.height,self._xi_image.width,4))
         else:
-            raise NotImplementedError("don't know how to convert image form")
+            raise xi.XI_Error("Not implemented.")
         # img_array = np.asarray(<np.uint8_t[:self._xi_image.height*self._xi_image.width,]> self._xi_image.bp).reshape((self._xi_image.height,self._xi_image.width))
         return img_array
+
+    def read(self, timeout_ms=500):
+        img = self.get_image(timeout_ms=timeout_ms)
+        if img is not None:
+            return 0, img
+        else:
+            return 1, None
 
     def close(self):
         self.stop_aquisition()

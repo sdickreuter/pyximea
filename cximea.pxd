@@ -1,3 +1,6 @@
+cdef extern from "stdbool.h":
+    pass
+
 cdef extern from  "m3api/xiApi.h":
 
     ctypedef int XI_RETURN
