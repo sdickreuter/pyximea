@@ -54,7 +54,9 @@ def get_device_info(xi.DWORD DevID, const char* parameter_name):
         "device_sn"
         "device_inst_path"
     """
-    cdef char[512] info
+    #cdef char[512] info
+    info_bytes = (' '*512).encode('UTF-8')
+    cdef char* info = info_bytes
     handle_xi_error(xi.xiGetDeviceInfoString(DevID,parameter_name,info,len(parameter_name) ) )
     return info
 
