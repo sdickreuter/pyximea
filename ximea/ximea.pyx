@@ -1,6 +1,5 @@
-import cython
-cimport cximea as xi
-from constants import *
+cimport ximea.cximea as xi
+from ximea.constants import *
 cimport numpy as np
 import numpy as np
 #logging
