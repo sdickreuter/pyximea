@@ -45,7 +45,7 @@ def get_device_count():
     handle_xi_error( xi.xiGetNumberDevices(&num) )
     return num
 
-def get_device_info(xi.DWORD DevID, const char* parameter_name):
+def get_device_info(xi.DWORD DevID, parameter_name):
     """
     devID: device id (0-n)
     parameter_name:
@@ -57,6 +57,8 @@ def get_device_info(xi.DWORD DevID, const char* parameter_name):
     #cdef char[512] info
     info_bytes = (' '*512).encode('UTF-8')
     cdef char* info = info_bytes
+    par_bytes = parameter_name.encode('UTF-8')
+    cdef const char* parameter_name= par_bytes
     handle_xi_error(xi.xiGetDeviceInfoString(DevID,parameter_name,info,len(parameter_name) ) )
     return info
 
@@ -64,6 +66,7 @@ cdef class Xi_Camera:
     cdef xi.HANDLE _xi_device
     cdef bint aquisition_active
     cdef xi.XI_IMG _xi_image
+
     def __cinit__(self, xi.DWORD DevID=-1,const char* user_id=NULL,const char* serial=NULL,const char* hw_path=NULL):
         self._xi_device = NULL
         if DevID >=0:
