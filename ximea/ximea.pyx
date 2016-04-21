@@ -87,7 +87,7 @@ cdef class Xi_Camera:
     def __init__(self, xi.DWORD DevID=-1,const char* user_id=NULL,const char* serial=NULL,const char* hw_path=NULL):
         self.aquisition_active = False
 
-    def set_param(self,const char* param_name,value):
+    def set_param(self,param_name,value):
         '''
         set paramter:
         param_name : see constants.py
@@ -105,7 +105,7 @@ cdef class Xi_Camera:
         else:
             logger.warning("value is not int,float or string")
 
-    def get_param(self,const char* param_name,type_hint=None):
+    def get_param(self,param_name,type_hint=None):
         '''
         get paramter:
         param_name : see constants.py
