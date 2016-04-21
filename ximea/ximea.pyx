@@ -93,13 +93,15 @@ cdef class Xi_Camera:
         param_name : see constants.py
         val: value to set, type depends on param, usually float
         '''
+        par_bytes = param_name.encode('UTF-8')
+        cdef const char* par= par_bytes
         self.stop_aquisition()
         if type(value) == int:
-            handle_xi_error( xi.xiSetParamInt(self._xi_device,param_name,value))
+            handle_xi_error( xi.xiSetParamInt(self._xi_device,par,value))
         elif type(value) == float:
-            handle_xi_error( xi.xiSetParamFloat(self._xi_device,param_name,value))
+            handle_xi_error( xi.xiSetParamFloat(self._xi_device,par,value))
         elif type(value) == str:
-            handle_xi_error( xi.xiSetParamString(self._xi_device,param_name,<char*>value,len(value)))
+            handle_xi_error( xi.xiSetParamString(self._xi_device,par,<char*>value,len(value)))
         else:
             logger.warning("value is not int,float or string")
 
@@ -108,41 +110,46 @@ cdef class Xi_Camera:
         get paramter:
         param_name : see constants.py
         '''
+        par_bytes = param_name.encode('UTF-8')
+        cdef const char* par= par_bytes
         cdef int int_value
         cdef float float_value
-        cdef char[512] string
+        info_bytes = (' '*512).encode('UTF-8')
+        cdef char* info = info_bytes
         if type_hint is not None:
             if type_hint == int:
                 int_value = 0
-                handle_xi_error( xi.xiGetParamInt(self._xi_device,param_name,&int_value))
+                handle_xi_error( xi.xiGetParamInt(self._xi_device,par,&int_value))
                 return int_value
             elif type_hint == float:
                 float_value = 0.0
-                handle_xi_error( xi.xiGetParamFloat(self._xi_device,param_name,&float_value))
+                handle_xi_error( xi.xiGetParamFloat(self._xi_device,par,&float_value))
                 return float_value
             elif type_hint == str:
-                string
-                handle_xi_error( xi.xiGetParamString(self._xi_device,param_name,string,len(string)))
-                return string
+                info_str = info.decode('UTF-8')
+                info_str = info_str.strip()
+                handle_xi_error( xi.xiGetParamString(self._xi_device,par,info,len(info)))
+                return info_str
 
         else:
             try:
                 float_value = 0.0
-                handle_xi_error( xi.xiGetParamFloat(self._xi_device,param_name,&float_value))
+                handle_xi_error( xi.xiGetParamFloat(self._xi_device,par,&float_value))
                 return float_value
             except XI_Wrong_Param_Type_Error:
                 #its not an int lets try float
                 pass
             try:
                 int_value = 0
-                handle_xi_error( xi.xiGetParamInt(self._xi_device,param_name,&int_value))
+                handle_xi_error( xi.xiGetParamInt(self._xi_device,par,&int_value))
                 return int_value
             except XI_Wrong_Param_Type_Error:
                 #ints not a float, lets try str.
                 pass
-            string
-            handle_xi_error( xi.xiGetParamString(self._xi_device,param_name,string,len(string)))
-            return string
+            info_str = info.decode('UTF-8')
+            info_str = info_str.strip()
+            handle_xi_error( xi.xiGetParamString(self._xi_device,par,info,len(info)))
+            return info_str
 
 
     cdef start_aquisition(self):
