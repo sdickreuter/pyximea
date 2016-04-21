@@ -61,7 +61,7 @@ def get_device_info(xi.DWORD DevID, parameter_name):
     cdef const char* par= par_bytes
     handle_xi_error(xi.xiGetDeviceInfoString(DevID,par,info,len(parameter_name) ) )
     info_str = info.decode('UTF-8')
-    info_str.strip()
+    info_str = info_str.strip()
     return info_str
 
 cdef class Xi_Camera:
