@@ -3,9 +3,6 @@ cimport cximea as xi
 from constants import *
 cimport numpy as np
 import numpy as np
-#logging
-import logging
-logger = logging.getLogger(__name__)
 
 cdef extern from "stdbool.h":
     ctypedef int bool
@@ -33,10 +30,10 @@ cpdef handle_xi_error(xi.XI_RETURN ret):
         if ret == 103:
             raise XI_Wrong_Param_Type_Error("Wrong Paramter Type")
         elif ret == 56:
-            logger.warning(error[0]+": "+error[1])
+            print(error[0]+": "+error[1])
             raise XI_Error("Device could not be opended.")
         else:
-            logger.warning(error[0]+": "+error[1])
+            print(error[0]+": "+error[1])
             # raise XI_Error(error[0]+": "+error[1])
 
 
@@ -95,7 +92,7 @@ cdef class Xi_Camera:
         elif type(value) == str:
             handle_xi_error( xi.xiSetParamString(self._xi_device,param_name,<char*>value,len(value)))
         else:
-            logger.warning("value is not int,float or string")
+            print("value is not int,float or string")
 
     def get_param(self,const char* param_name,type_hint=None):
         '''
@@ -176,7 +173,8 @@ cdef class Xi_Camera:
 
         '''
         try:
-            lvl = logger_levels[level]
+            pass
+            #lvl = logger_levels[level]
         except KeyError:
             raise XI_Error("Level '%s' not avaible in API"%level)
         handle_xi_error( xi.xiSetParamInt(self._xi_device,XI_PRM_DEBUG_LEVEL,lvl) )
