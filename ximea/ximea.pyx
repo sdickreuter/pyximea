@@ -1,4 +1,4 @@
-cimport ximea.cximea as xi
+cimport cximea as xi
 from ximea.constants import *
 cimport numpy as np
 import numpy as np
