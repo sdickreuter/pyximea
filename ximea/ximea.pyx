@@ -58,8 +58,8 @@ def get_device_info(xi.DWORD DevID, parameter_name):
     info_bytes = (' '*512).encode('UTF-8')
     cdef char* info = info_bytes
     par_bytes = parameter_name.encode('UTF-8')
-    cdef const char* parameter_name= par_bytes
-    handle_xi_error(xi.xiGetDeviceInfoString(DevID,parameter_name,info,len(parameter_name) ) )
+    cdef const char* par= par_bytes
+    handle_xi_error(xi.xiGetDeviceInfoString(DevID,par,info,len(parameter_name) ) )
     return info
 
 cdef class Xi_Camera:
