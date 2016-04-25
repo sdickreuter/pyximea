@@ -69,3 +69,12 @@ class QtCam(QMainWindow):
         self.Canvas.draw()
 
 
+
+
+if __name__ == '__main__':
+    import sys
+
+    app = QApplication(sys.argv)
+    main = SCNR()
+    main.show()
+    sys.exit(app.exec_())
