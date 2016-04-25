@@ -61,7 +61,7 @@ class QtCam(QMainWindow):
     @pyqtSlot()
     def imgButton_clicked(self):
         img = self.cam.get_image()
-        print(1 / dt, img.shape)
+        print(img.shape)
         self.axes.plot(img)
         # self.axes.plot(self._wl, spec)
         self.Canvas.draw()
