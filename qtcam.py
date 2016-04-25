@@ -22,7 +22,6 @@ class QtCam(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.settings = Settings()
         self.fig = Figure()
         self.axes = self.fig.add_subplot(111)
         self.axes.hold(False)
