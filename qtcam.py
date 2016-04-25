@@ -45,7 +45,6 @@ class QtCam(QMainWindow):
 
         cam = xi.Xi_Camera(DevID=0)
         cam.set_debug_level("Warning")
-        ts = time()
         cam.set_param('exposure', 10000.0)
         # cam.set_param('limit_bandwidth',360)
         cam.set_param('aeag', 1)
