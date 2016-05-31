@@ -21,13 +21,19 @@ class QtCam(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.vb = pg.ViewBox()
+        self.gv = pg.GraphicsView()
 
-        l = QVBoxLayout(self.ui.imgwidget)
-        l.addWidget(self.vb)
+        self.vb = pg.ViewBox()
 
         self.img = pg.ImageItem()
         self.vb.addItem(self.img)
+
+        self.gv.setCentralWidget(self.vb)
+        #self.ui.addWidget(self.gv)
+
+        self.l = QVBoxLayout(self.ui.imgwidget)
+
+        self.l.addWidget(self.gv)
 
         self.timer = QTimer(self)
         # self.timer.timeout.connect(self.check_pad_analog)
