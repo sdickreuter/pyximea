@@ -21,10 +21,13 @@ class QtCam(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.imv = pg.ImageView()
+        self.vb = pg.ViewBox()
 
         l = QVBoxLayout(self.ui.imgwidget)
-        l.addWidget(self.imv)
+        l.addWidget(self.vb)
+
+        self.img = pg.ImageItem()
+        self.vb.addItem(self.img)
 
         self.timer = QTimer(self)
         # self.timer.timeout.connect(self.check_pad_analog)
@@ -51,7 +54,7 @@ class QtCam(QMainWindow):
     @pyqtSlot()
     def imgButton_clicked(self):
         img = self.cam.get_image()
-        self.imv.setImage(img)
+        self.img.setImage(img)
 
 
 if __name__ == '__main__':
