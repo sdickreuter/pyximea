@@ -1,17 +1,16 @@
-import random
-import os
 import matplotlib
+
 matplotlib.use("Qt5Agg")
-from PyQt5.QtCore import pyqtSlot, QTimer, QSocketNotifier, QAbstractTableModel, Qt, QVariant, QModelIndex
-from PyQt5.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QFileDialog, QInputDialog
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-import numpy as np
+from PyQt5.QtCore import pyqtSlot, QTimer
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout
+import pyqtgraph as pg
 from PyQt5 import uic
-#from sys import path
+
+# from sys import path
 Ui_MainWindow = uic.loadUiType("qtcam.ui")[0]
 
 import ximea as xi
+
 
 class QtCam(QMainWindow):
     _window_title = "qtcam"
@@ -22,21 +21,13 @@ class QtCam(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.fig = Figure()
-        self.axes = self.fig.add_subplot(111)
-        self.axes.hold(False)
-
-        self.Canvas = FigureCanvas(self.fig)
-        self.Canvas.setParent(self.ui.imgwidget)
-
-        self.Canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.Canvas.updateGeometry()
+        self.imv = pg.ImageView()
 
         l = QVBoxLayout(self.ui.imgwidget)
-        l.addWidget(self.Canvas)
+        l.addWidget(self.imv)
 
         self.timer = QTimer(self)
-        #self.timer.timeout.connect(self.check_pad_analog)
+        # self.timer.timeout.connect(self.check_pad_analog)
         self.timer.start(100)
 
         # xi.handle_xi_error(1)
@@ -57,16 +48,10 @@ class QtCam(QMainWindow):
         self.cam.set_param('offsetY', 50)
         print(self.cam.get_param('framerate', float))
 
-
     @pyqtSlot()
     def imgButton_clicked(self):
         img = self.cam.get_image()
-        print(img.shape)
-        self.axes.imshow(img)
-        # self.axes.plot(self._wl, spec)
-        self.Canvas.draw()
-
-
+        self.imv.setImage(img)
 
 
 if __name__ == '__main__':
