@@ -50,16 +50,18 @@ class QtCam(QMainWindow):
         self.cam.set_param('aeag', 1)
         self.cam.set_param('exp_priority', 0)
         # cam.set_param('shutter_type',0)
-        self.cam.set_binning(4)
-        self.cam.set_param('width', 400)
-        self.cam.set_param('height', 300)
-        self.cam.set_param('offsetX', 50)
-        self.cam.set_param('offsetY', 50)
+        self.cam.set_binning(1)
+        #self.cam.set_param('width', 400)
+        #self.cam.set_param('height', 300)
+        #self.cam.set_param('offsetX', 50)
+        #self.cam.set_param('offsetY', 50)
+        self.cam.set_param('imgdataformat',2)
         print(self.cam.get_param('framerate', float))
 
     @pyqtSlot()
     def imgButton_clicked(self):
         img = self.cam.get_image()
+        print(img.shape)
         self.img.setImage(img)
 
 
