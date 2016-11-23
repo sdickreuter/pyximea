@@ -11,7 +11,7 @@ import time
 Ui_MainWindow = uic.loadUiType("qtcam.ui")[0]
 
 import ximea as xi
-
+#from . import ximea as xi
 
 class CameraThread(QObject):
     ImageReadySignal = pyqtSignal(np.ndarray)
@@ -40,8 +40,8 @@ class CameraThread(QObject):
                 self._cam.set_param('aeag', 0)
                 self._cam.set_param('exp_priority', 0)
                 #self._cam.set_binning(2, skipping=False)
-                self._cam.set_param('imgdataformat',2)
-                self._cam.set_param('buffers_queue_size',1)
+                self._cam.set_param('imgdataformat',6)
+                #self._cam.set_param('buffers_queue_size',1)
                 self._cam.get_image()
 
                 self.thread.started.connect(self.process)
@@ -126,16 +126,14 @@ class QtCam(QMainWindow):
         self.gv.setCentralWidget(self.vb)
         #self.ui.addWidget(self.gv)
 
-        self.l = QVBoxLayout(self.ui.imgwidget)
-
-
-        self.l = QGridLayout(self.ui.camwidget)
+        self.l = QGridLayout(self.ui.imgwidget)
         self.l.setSpacing(0)
         self.l.addWidget(self.gv)
 
         self.w = pg.HistogramLUTWidget()
         self.l.addWidget(self.w, 0, 1)
         self.w.setImageItem(self.img)
+        #self.w.setDisabled(True)
 
         try:
             self.cam = CameraThread()

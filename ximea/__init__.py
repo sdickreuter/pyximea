@@ -1,1 +1,1 @@
-from . ximea import *
+from .ximea import *
