@@ -2,7 +2,7 @@ import matplotlib
 
 matplotlib.use("Qt5Agg")
 from PyQt5.QtCore import pyqtSlot, QTimer
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QGridLayout
 import pyqtgraph as pg
 from PyQt5 import uic
 
@@ -33,7 +33,15 @@ class QtCam(QMainWindow):
 
         self.l = QVBoxLayout(self.ui.imgwidget)
 
+
+        self.l = QGridLayout(self.ui.camwidget)
+        self.l.setSpacing(0)
         self.l.addWidget(self.gv)
+
+        self.w = pg.HistogramLUTWidget()
+        self.l.addWidget(self.w, 0, 1)
+        self.w.setImageItem(self.img)
+
 
         self.timer = QTimer(self)
         # self.timer.timeout.connect(self.check_pad_analog)
