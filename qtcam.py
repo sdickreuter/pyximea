@@ -142,7 +142,7 @@ class QtCam(QMainWindow):
         except:
             print("Error initializing Camera")
         if self.cam.isinitialized:
-            self.cam.set_exposure(self.settings.cam_exposure_time * 1000)
+            self.cam.set_exposure(200 * 1000)
             self.cam.ImageReadySignal.connect(self.update_camera)
             self.cam.start()
         else:
