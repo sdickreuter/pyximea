@@ -38,7 +38,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Get Image</string>
+         <string>Start/Stop</string>
         </property>
        </widget>
       </item>
